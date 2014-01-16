@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular-resource.min.js"></script>
+
+    <script>
+        var app = angular.module('simon',['ngResource']);
+        app.controller('simonCtrl',function($scope,$document,$resource)
+        {
+            $scope.spheroResource = $resource('http://192.168.229.170:1234/:color');
+            $scope.colors = ['red','green','blue','yellow'];
+            $scope.array_size = 1;
+            $scope.current_expected_colors = [];
+            $scope.current_entered_colors = [];
+
+            $scope.check_entered_colors = function(position) {
+                if (angular.equals($scope.current_expected_colors[position], $scope.current_entered_colors[position])) {
+                    if ($scope.current_entered_colors.length == $scope.array_size)
+                    {
+                        $scope.array_size++;
+//                        $scope.spheroResource.get({color:"good"});
+                        console.log('sending winner');
+                        // announce winner
+                        setTimeout(function(){
+                            $scope.current_entered_colors = [];
+                            $scope.current_expected_colors.push($scope.colors[Math.floor(Math.random() * (4) + 0)]);
+
+                            angular.forEach($scope.current_expected_colors,function(color,key) {
+                                setTimeout(function(){
+                                    $scope.spheroResource.get({color:$scope.current_expected_colors[key]});
+                                },key*1000)
+                            });
+                            console.log('sending colors');
+                            console.log($scope.current_expected_colors);
+                        },2000);
+                    }
+                }
+                else{
+                    $scope.spheroResource.get({color:"bad"});
+                    //you suck!!!!!
+                }
+            };
+
+
+
+            $document.bind('keydown',function(event){
+                switch (event.which)
+                {
+                    case 102:
+                    case 70:
+                        $scope.array_size = 1;
+                        $scope.current_expected_colors = [];
+                        $scope.current_entered_colors = [];
+                        $scope.current_expected_colors.push($scope.colors[Math.floor(Math.random() * (4) + 0)]);
+                        $scope.spheroResource.get({color:$scope.current_expected_colors[0]});
+
+                        console.log("sending new game colors",$scope.current_expected_colors);
+                        break;
+
+                    case 119:
+                    case 87:
+                        $scope.current_entered_colors.push('red');
+                        $scope.check_entered_colors($scope.current_entered_colors.length - 1);
+                        break;
+
+                    case 97:
+                    case 65:
+                        $scope.current_entered_colors.push('green');
+                        $scope.check_entered_colors($scope.current_entered_colors.length - 1);
+                        break;
+
+                    case 115:
+                    case 83:
+                        $scope.current_entered_colors.push('blue');
+                        $scope.check_entered_colors($scope.current_entered_colors.length - 1);
+                        break;
+
+                    case 100:
+                    case 68:
+                        $scope.current_entered_colors.push('yellow');
+                        $scope.check_entered_colors($scope.current_entered_colors.length - 1);
+                        break;
+                }
+                if(!$scope.$$phase) {
+                    $scope.$digest();
+                }
+            });
+        })
+    </script>
+</head>
+<body ng-app="simon" ng-controller="simonCtrl">
+{{test}}
+
+</body>
+</html>
