@@ -24,25 +24,36 @@ http.createServer(function(req,res){
 
 Cylon.robot({
   name:"beam_me_up_spotty",
-  connection: { name: 'sphero', adaptor: 'sphero', port: '/dev/tty.Sphero-RGR-AMP-SPP' },
+  // windows port: COM#, mine happens to be 6
+  connection: { name: 'sphero', adaptor: 'sphero', port: 'COM6' },
+  // mac port: /dev/*Sphero-*
+  //connection: { name: 'sphero', adaptor: 'sphero', port: '/dev/tty.Sphero-RGR-AMP-SPP' },
   device: { name: 'sphero', driver: 'sphero' },
  
   work: function(my) {
     var on = false;
     every((.5).second(), function() {
-      // flash light
-      
+
         my.sphero.setColor(someColor);
         someColor='black';
         // on = false;
       
-      // Roll in a random direction
       if(doMoveGood > 0){
-        my.sphero.roll(5, 0);
+        my.sphero.setColor("deeppink");
+        after((.1).second(), function() {
+            my.sphero.setColor("orange");
+            after((.1).second(), function() {
+                my.sphero.setColor("navy");
+                after((.1).second(), function() {
+                    my.sphero.setColor("green");
+                });
+            });
+        });
         doMoveGood--;
       }
       if(doMoveBad > 0){
-        my.sphero.roll(60, 60);
+        my.sphero.roll(255, 60);
+        my.sphero.setColor('red');
         doMoveBad--;
       }
     });
@@ -51,7 +62,7 @@ Cylon.robot({
 
  
 // Tell Cylon we want it to spin up the API on port 4321
-Cylon.api({host:'192.168.229.170',port: '4321'})
+Cylon.api({host:'127.0.0.1',port: '4321'});
  
 // Start up Cylon API server
 Cylon.start();
